@@ -5,23 +5,17 @@ import numpy as np
 import sys
 %matplotlib inline
 
-root_path = '/media/project/20/dsme/all_datasets/daewoo'
+data_path = '/media/lepoeme20/Data/projects/daewoo/brave/data'
+folder = '2020-05-06-0'
+all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
+imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, imgs))
 
-ship = ['weather', 'lngc', 'vlcc', 'lngc2', 'hyundai']
-data_type = 'raw_images'
-data_path = os.path.join(root_path, ship[0], data_type)
-img_idx = sorted(os.listdir(data_path))
-
-idx = iter(range(len(img_idx)))
-
-start = 920
-end = len(img_idx)
-step = 10
-result = [list(np.arange(start, end))[i * step:(i + 1) * step] for i in range((len(list(np.arange(start, end))) + step - 1) // step)]
-idx_list = iter(result)
+idx = iter(np.linspace(0, len(imgs), 30, dtype=int))
+start = 0
+end = len(imgs)
 
 def show_image(idx):
-    img = cv2.imread(os.path.join(data_path, img_idx[idx]), cv2.IMREAD_COLOR)
+    img = cv2.imread(os.path.join(data_path, folder, imgs[idx]), cv2.IMREAD_COLOR)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     plt.imshow(img)
@@ -57,6 +51,6 @@ def get_image(idx):
     return img
 
 
-show_image(next(idx_list))
+show_image(next(idx))
 show_images(next(idx_list))
 # resizing(16) #확인용
