@@ -6,26 +6,36 @@ import sys
 import pandas as pd
 %matplotlib inline
 
+# set radar_path and load WaveParam_2020.csv 
 radar_path = '/media/lepoeme20/Data/projects/daewoo/brave/waveradar/WaveParam_2020.csv'
 radar_df = pd.read_csv(radar_path, index_col=None).iloc[:, :2]
 radar_df = radar_df.rename(columns={"Date&Time": "Date"})
 
+# set data_path
 data_path = '/media/lepoeme20/Data/projects/daewoo/brave/data'
+
+# set folder (date)
 folder = '2020-05-18-1'
 
+# extract specific time and empty rows
 df = radar_df[radar_df.Date.str.contains(folder[:10], case=False)]
 df = df[df.Date.str[11:13] > '06']
 df = df[df.Date.str[11:13] < '17']
 empty_radar = df[df[' SNR'] == 0.]
 
+# get images
 all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
 imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, all_imgs))
 
+# create iterator
 idx = iter(np.linspace(0, len(imgs), 15, dtype=int))
 start = 0
 end = len(imgs)
 
 def show_image(idx):
+    '''
+    Display a single image
+    '''
     img = cv2.imread(os.path.join(data_path, folder, imgs[idx]), cv2.IMREAD_COLOR)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -34,21 +44,21 @@ def show_image(idx):
     print(os.path.join(data_path, imgs[idx]), '\n{}/{}'.format(idx, len(imgs)))
 
 def resizing(idx):
-    img = cv2.imread(os.path.join(data_path, img_idx[idx]), cv2.IMREAD_COLOR)
+    '''
+    Show resized image
+    '''
+    img = cv2.imread(os.path.join(data_path, imgs[idx]), cv2.IMREAD_COLOR)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img[400:600, 400:]
     img = cv2.resize(img, dsize=(224, 224))
     plt.imshow(img)
     plt.show()
 
-def get_image(idx):
-    img = cv2.imread(os.path.join(data_path, img_idx[idx]), cv2.IMREAD_COLOR)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = img[400:600, 400:]
-    img = cv2.resize(img, dsize=(224, 224))
-    return img
-
 def get_empty_radar_images():
+    '''
+    print Time / Start image name / End image name
+    where there is no radar value
+    '''
     time_list = [date[11:16] for date in empty_radar['Date']]
     for time in time_list:
         h = time[0:2]
