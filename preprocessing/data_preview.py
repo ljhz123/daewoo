@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 %matplotlib inline
 
-# set radar_path and load WaveParam_2020.csv 
+# set radar_path and load WaveParam_2020.csv
 radar_path = '/media/lepoeme20/Data/projects/daewoo/brave/waveradar/WaveParam_2020.csv'
 radar_df = pd.read_csv(radar_path, index_col=None).iloc[:, :2]
 radar_df = radar_df.rename(columns={"Date&Time": "Date"})
