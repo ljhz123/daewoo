@@ -2,6 +2,8 @@ import os
 import cv2
 import numpy as np
 import pandas as pd
+import multiprocessing
+from multiprocessing import Pool
 
 def preprocessing(img_name):
     img = cv2.imread(os.path.join(data_path, folder, img_name), cv2.IMREAD_GRAYSCALE)
@@ -38,4 +40,7 @@ if __name__=='__main__':
         imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, all_imgs))
 
         # remove images
-        imgs = list(filter(lambda x: start <= x[:-4] < end, imgs))
+        if start != '-' and end != '-':
+            imgs = list(filter(lambda x: start <= x[:-4] < end, imgs))
+        with Pool(16) as p:
+            print(p.map(preprocessing, imgs))
