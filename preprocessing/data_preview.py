@@ -28,7 +28,7 @@ all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
 imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, all_imgs))
 
 # create iterator
-idx = iter(np.linspace(0, len(imgs), 15, dtype=int))
+idx = iter(np.linspace(0, len(imgs), 600, dtype=int))
 start = 0
 end = len(imgs)
 
