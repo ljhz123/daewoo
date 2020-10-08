@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import pandas as pd
-%matplotlib inline
-
 
 def cal_time(time):
     full_time = ''.join(time[:10].split('-')) + ''.join(time[11:].split(':'))
@@ -28,50 +26,51 @@ def cal_time(time):
 
     return start, end
 
+if __name__=='__main__':
+    # set radar_path and load WaveParam_2020.csv
+    radar_path = '/media/lepoeme20/Data/projects/daewoo/brave/waveradar/WaveParam_2020.csv'
+    # set data_path
+    data_path = '/media/lepoeme20/Data/projects/daewoo/brave/crop/'
 
-# set radar_path and load WaveParam_2020.csv
-radar_path = '/media/lepoeme20/Data/projects/daewoo/brave/waveradar/WaveParam_2020.csv'
-radar_df = pd.read_csv(radar_path, index_col=None)
-radar_df = radar_df.rename(columns={"Date&Time": "Date"})
+    radar_df = pd.read_csv(radar_path, index_col=None)
+    radar_df = radar_df.rename(columns={"Date&Time": "Date"})
 
-# set data_path
-data_path = '/media/lepoeme20/Data/projects/daewoo/brave/crop'
+    # set folder (date)
+    folders = sorted(os.listdir(data_path))
 
-# set folder (date)
-folders = sorted(os.listdir(data_path))
+    total_img = list()
+    total_time = list()
+    total_label = list()
+    for folder in folders:
+        print(folder)
+        # extract specific time and empty rows
+        df = radar_df[radar_df.Date.str.contains(folder[:10], case=False)]
+        df = df[df.Date.str[11:13] > '06']
+        df = df[df.Date.str[11:13] < '17']
+        radar = df[df[' SNR'] == 0.]
 
-total_img = list()
-total_time = list()
-total_label = list()
-for folder in folders:
-    print(folder)
-    # extract specific time and empty rows
-    df = radar_df[radar_df.Date.str.contains(folder[:10], case=False)]
-    df = df[df.Date.str[11:13] > '06']
-    df = df[df.Date.str[11:13] < '17']
-    radar = df[df[' SNR'] != 0.]
+        # get images
+        all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
+        _imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, all_imgs))
 
-    # get images
-    all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
-    _imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, all_imgs))
+        label_list = list()
+        img_list = list()
+        time_list = list()
 
-    label_list = list()
-    img_list = list()
-    time_list = list()
+        for idx in range(radar.shape[0]):
+            time = radar['Date'].iloc[idx]
+            label = radar[' T.Hs'].iloc[idx]
+            start, end = cal_time(time)
+            imgs = list(filter(lambda x: start <= x[:-6] <= end, _imgs))
+            img_list.extend(imgs)
+            label_list.extend([label]*len(imgs))
+            time_list.extend([time]*len(imgs))
 
-    for idx in range(radar.shape[0]):
-        time = radar['Date'].iloc[idx]
-        label = radar[' T.Hs'].iloc[idx]
-        start, end = cal_time(time)
-        imgs = list(filter(lambda x: start <= x[:-6] <= end, _imgs))
-        img_list.extend(imgs)
-        label_list.extend([label]*len(imgs))
-        time_list.extend([time]*len(imgs))
+        total_img.extend(img_list)
+        total_time.extend(time_list)
+        total_label.extend(label_list)
 
-    total_img.extend(img_list)
-    total_time.extend(time_list)
-    total_label.extend(label_list)
-
-total_img = [crop_path+img for img in total_img]
-data_dict = {'time':total_time, 'image':total_img, 'label':total_label}
-df = pd.DataFrame(data_dict)
+    total_img = [data_path+img for img in total_img]
+    data_dict = {'time':total_time, 'image':total_img, 'label':total_label}
+    df = pd.DataFrame(data_dict)
+    df.to_csv('./brave_data_label.csv')
