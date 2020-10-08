@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import multiprocessing
 from multiprocessing import Pool
+from collections import defaultdict
 
 def preprocessing(img_name):
     img = cv2.imread(os.path.join(data_path, folder, img_name), cv2.IMREAD_GRAYSCALE)
@@ -19,19 +20,18 @@ def preprocessing(img_name):
 
 if __name__=='__main__':
     df = pd.read_csv('./brave.csv').iloc[:, 1:5]
-    remove_img_dict = df.to_dict()
+    remove_img_dict = defaultdict(list)
+
+    for k, v1, v2 in zip(df.folder_name.values, df.remove_start_image.values, df.remove_end_image.values):
+        tmp = (v1, v2)
+        remove_img_dict[k].append(tmp)
 
     # set data_path
     data_path = '/media/lepoeme20/Data/projects/daewoo/brave/data'
     save_path = '/media/lepoeme20/Data/projects/daewoo/brave/crop'
+    folders = sorted(os.listdir(data_path))
 
-    for idx in range(len(df)):
-        folder = remove_img_dict['folder_name'][idx]
-        start = remove_img_dict['remove_start_image'][idx]
-        start = start if len(start) == 17 else start.replace('.jpg', '')
-        end = remove_img_dict['remove_end_image'][idx]
-        end = end if len(end) == 17 else end.replace('.jpg', '')
-
+    for i, folder in enumerate(folders):
         # create save path
         os.makedirs(os.path.join(save_path, folder), exist_ok=True)
 
@@ -39,8 +39,14 @@ if __name__=='__main__':
         all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
         imgs = list(filter(lambda x: 7 <= int(x[8:10]) < 17, all_imgs))
 
-        # remove images
-        if start != '-' and end != '-':
-            imgs = list(filter(lambda x: start <= x[:-4] < end, imgs))
+        rm_imgs = []
+        for (start, end) in remove_img_dict[folder]:
+            start = start if len(start) == 17 else start.replace('.jpg', '')
+            end = end if len(end) == 17 else end.replace('.jpg', '')
+            if start != '-' and end != '-':
+                rm_imgs.extend(list(filter(lambda x: start <= x[:-4] <= end, imgs)))
+        imgs = list(filter(lambda x: x not in rm_imgs, imgs))
+
         with Pool(16) as p:
-            print(p.map(preprocessing, imgs))
+            p.map(preprocessing, imgs)
+        print("{}/{}".format(i, len(folders)))
