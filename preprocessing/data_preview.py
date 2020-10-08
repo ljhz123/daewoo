@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import pandas as pd
-%matplotlib inline
 
 # set radar_path and load WaveParam_2020.csv
 radar_path = '/media/lepoeme20/Data/projects/daewoo/brave/waveradar/WaveParam_2020.csv'
