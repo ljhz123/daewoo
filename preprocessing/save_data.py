@@ -55,4 +55,5 @@ if __name__=='__main__':
         with Pool(32) as p:
             p.map(preprocessing, imgs)
 
-        print("{}/{} time: {:.3f} s".format(i, len(folders), time.time()-start))
+        print("{}/{} \t Total Image: {:,} | RM Image: {:,} | Usable Image: {:,} | time: {:.3f}s".format(
+            i, len(folders), len(imgs)+len(rm_imgs), len(rm_imgs), len(imgs), time.time()-start))
