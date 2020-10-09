@@ -30,7 +30,7 @@ if __name__=='__main__':
     # set radar_path and load WaveParam_2020.csv
     radar_path = '/media/lepoeme20/Data/projects/daewoo/brave/waveradar/WaveParam_2020.csv'
     # set data_path
-    data_path = '/media/lepoeme20/Data/projects/daewoo/brave/crop/'
+    data_path = '/media/lepoeme20/Data/projects/daewoo/brave/crop'
 
     radar_df = pd.read_csv(radar_path, index_col=None)
     radar_df = radar_df.rename(columns={"Date&Time": "Date"})
@@ -47,7 +47,7 @@ if __name__=='__main__':
         df = radar_df[radar_df.Date.str.contains(folder[:10], case=False)]
         df = df[df.Date.str[11:13] > '06']
         df = df[df.Date.str[11:13] < '17']
-        radar = df[df[' SNR'] == 0.]
+        radar = df[df[' SNR'] != 0.]
 
         # get images
         all_imgs = sorted(os.listdir(os.path.join(data_path, folder)))
@@ -62,7 +62,8 @@ if __name__=='__main__':
             label = radar[' T.Hs'].iloc[idx]
             start, end = cal_time(time)
             imgs = list(filter(lambda x: start <= x[:-6] <= end, _imgs))
-            img_list.extend(imgs)
+            image_path = [os.path.join(data_path, folder, impath) for impath in imgs]
+            img_list.extend(image_path)
             label_list.extend([label]*len(imgs))
             time_list.extend([time]*len(imgs))
 
@@ -70,7 +71,6 @@ if __name__=='__main__':
         total_time.extend(time_list)
         total_label.extend(label_list)
 
-    total_img = [data_path+img for img in total_img]
     data_dict = {'time':total_time, 'image':total_img, 'label':total_label}
     df = pd.DataFrame(data_dict)
     df.to_csv('./brave_data_label.csv')
