@@ -1,5 +1,6 @@
 import os
 import cv2
+import time
 import numpy as np
 import pandas as pd
 import multiprocessing
@@ -7,15 +8,18 @@ from multiprocessing import Pool
 from collections import defaultdict
 
 def preprocessing(img_name):
-    img = cv2.imread(os.path.join(data_path, folder, img_name), cv2.IMREAD_GRAYSCALE)
-    img_gray = img.astype(np.float32)
+    try:
+        img = cv2.imread(os.path.join(data_path, folder, img_name), cv2.IMREAD_GRAYSCALE)
+        img_gray = img.astype(np.float32)
 
-    # ROI cropping
-    img = img_gray[img_gray.shape[0]-448:, img_gray.shape[1]-448:]
-    # Resizing
-    img = cv2.resize(img, dsize=(224, 224))
+        # ROI cropping
+        img = img_gray[img_gray.shape[0]-448:, img_gray.shape[1]-448:]
+        # Resizing
+        img = cv2.resize(img, dsize=(224, 224))
 
-    cv2.imwrite(os.path.join(save_path, folder, img_name), img)
+        cv2.imwrite(os.path.join(save_path, folder, img_name), img)
+    except AttributeError:
+        pass
 
 
 if __name__=='__main__':
@@ -47,6 +51,8 @@ if __name__=='__main__':
                 rm_imgs.extend(list(filter(lambda x: start <= x[:-4] <= end, imgs)))
         imgs = list(filter(lambda x: x not in rm_imgs, imgs))
 
-        with Pool(16) as p:
+        start = time.time()
+        with Pool(32) as p:
             p.map(preprocessing, imgs)
-        print("{}/{}".format(i, len(folders)))
+
+        print("{}/{} time: {:.3f} s".format(i, len(folders), time.time()-start))
