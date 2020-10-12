@@ -6,8 +6,9 @@ import pandas as pd
 import multiprocessing
 from multiprocessing import Pool
 from collections import defaultdict
+from functools import partial
 
-def preprocessing(img_name):
+def preprocessing(img_name, data_path, folder):
     try:
         img = cv2.imread(os.path.join(data_path, folder, img_name), cv2.IMREAD_GRAYSCALE)
         img_gray = img.astype(np.float32)
@@ -51,9 +52,10 @@ if __name__=='__main__':
                 rm_imgs.extend(list(filter(lambda x: start <= x[:-4] <= end, imgs)))
         imgs = list(filter(lambda x: x not in rm_imgs, imgs))
 
-        start = time.time()
+        save_img=partial(preprocessing, data_path=data_path, folder=folder)
+
         with Pool(32) as p:
-            p.map(preprocessing, imgs)
+            p.map(save_img, imgs)
 
         print("{}/{} \t Folder: {} | Total Image: {:,} | RM Image: {:,} | Usable Image: {:,} | time: {:.3f}s".format(
             i, len(folders), folder, len(imgs)+len(rm_imgs), len(rm_imgs), len(imgs), time.time()-start))
